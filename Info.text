@@ -1,37 +1,8 @@
 Requirement
 pip install python-pptx pandas openpyxl
 
-Create an Excel file with this structure:
+requirements.xlsx needs to be updated as per requirements
+If you need more titles, sections, etc
 
-Section	Title	Description	Priority	Diagram Needed
-3.1	API Gateway	RESTful endpoints for...	High	api_flow
-3.2	Database Layer	MongoDB cluster with sharding...	Medium	db_arch
-
-Create a PowerPoint template (template.pptx) with:
-
-A title slide layout
-
-A main content layout (layout 1) containing:
-
-Title placeholder
-
-Text placeholder
-
-(Optional) Image placeholder
-
-Create a diagrams folder and add any referenced images (e.g., api_flow.png)
-
-Features Included:
-Command-line interface
-
-Input validation
-
-Priority badges with color coding
-
-Image insertion from specified directory
-
-Error logging
-
-Column mapping
-
-Template-based slide creation
+PPTX python package allows for easy conversions of logic however
+However not very pretty atm lol

@@ -58,6 +58,23 @@ def add_priority_badge(slide, priority):
     p.font.color.rgb = RGBColor(255, 255, 255)
     p.alignment = 1  # Center alignment
 
+def add_logo(slide, logo_path):
+    """Add logo to slide"""
+    if os.path.exists(logo_path):
+        left = Inches(0.5)
+        top = Inches(0.5)
+        height = Inches(1.5)
+        slide.shapes.add_picture(logo_path, left, top, height=height)
+    else:
+        logging.warning(f"Logo not found: {logo_path}")
+
+def set_slide_background(slide):
+    """Set a simple background color for each slide"""
+    background = slide.background
+    fill = background.fill
+    fill.solid()
+    fill.fore_color.rgb = RGBColor(255, 255, 255)  # White background (you can change the color here)
+
 def create_ppt(input_file, output_file):
     """Main function to create PowerPoint from Excel"""
     try:
@@ -67,11 +84,15 @@ def create_ppt(input_file, output_file):
         df = validate_input(input_file)
         prs = Presentation()
         
-        # Use the first slide layout (title and content) for all new slides
+        # Use a clean slide layout (title and content) for all new slides
         slide_layout = prs.slide_layouts[1]
         
+        # Process each row in the Excel input and create slides
         for _, row in df.iterrows():
             slide = prs.slides.add_slide(slide_layout)
+            
+            # Set background color for each slide
+            set_slide_background(slide)
             
             # Set title
             title = slide.shapes.title
@@ -94,6 +115,10 @@ def create_ppt(input_file, output_file):
             
             # Add priority badge
             add_priority_badge(slide, row['Priority'])
+            
+            # Add logo if specified
+            if 'Logo' in row and pd.notna(row['Logo']):
+                add_logo(slide, row['Logo'])
         
         prs.save(output_file)
         print(f"Successfully created {output_file} with {len(df)} slides")
