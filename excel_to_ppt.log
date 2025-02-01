@@ -1,0 +1,4 @@
+2025-02-01 21:40:23,686 - ERROR - Error processing file: 'no placeholder on this slide with idx == 1'
+2025-02-01 21:41:29,179 - WARNING - Logo not found: Logo
+2025-02-01 21:41:29,186 - WARNING - Logo not found: Logo
+2025-02-01 21:41:29,459 - INFO - Created presentation: output\presentation.pptx

@@ -10,6 +10,7 @@ import os
 # Configure default paths
 DEFAULT_INPUT = os.path.join("input", "requirements.xlsx")
 DEFAULT_OUTPUT = os.path.join("output", "presentation.pptx")
+TEMPLATE_FILE = os.path.join("templates", "General presentation.pptx")
 
 # Set up logging
 logging.basicConfig(filename='excel_to_ppt.log', level=logging.INFO,
@@ -82,26 +83,26 @@ def set_slide_background(slide, priority):
         fill.solid()
         fill.fore_color.rgb = RGBColor(152, 251, 152)  # Light Green for Low priority
 
-def create_ppt(input_file, output_file):
+def create_ppt(input_file, output_file, template_file):
     """Main function to create PowerPoint from Excel"""
     try:
         # Create output directory if needed
         os.makedirs(os.path.dirname(output_file), exist_ok=True)
         
-        df = validate_input(input_file)
-        prs = Presentation()
+        # Load the template presentation
+        prs = Presentation(template_file)
         
-        # Use a clean slide layout (title and content) for all new slides
-        slide_layout = prs.slide_layouts[1]
+        # Validate input Excel file
+        df = validate_input(input_file)
         
         # Process each row in the Excel input and create slides
         for _, row in df.iterrows():
-            slide = prs.slides.add_slide(slide_layout)
+            slide = prs.slides.add_slide(prs.slide_layouts[2])  # Update layout index based on printout
             
             # Set background color based on priority
             set_slide_background(slide, row['Priority'])
             
-            # Set title with improved text formatting
+            # Set title and content
             title = slide.shapes.title
             title.text = f"{row['Section']} - {row['Title']}"
             title.text_frame.paragraphs[0].font.size = Pt(20)
@@ -109,7 +110,7 @@ def create_ppt(input_file, output_file):
             title.text_frame.paragraphs[0].font.color.rgb = RGBColor(0, 0, 0)  # Black title color
             
             # Set content with improved text styling
-            content = slide.placeholders[1]
+            content = slide.shapes.placeholders[1]  # Use the correct placeholder index based on layout
             content.text = row['Description']
             content.text_frame.paragraphs[0].font.size = Pt(14)
             content.text_frame.paragraphs[0].font.color.rgb = RGBColor(0, 0, 0)  # Black content color
@@ -148,10 +149,14 @@ if __name__ == "__main__":
     parser.add_argument('--output', 
                         default=DEFAULT_OUTPUT,
                         help=f'Output PPTX file (default: {DEFAULT_OUTPUT})')
+    parser.add_argument('--template', 
+                        default=TEMPLATE_FILE,
+                        help=f'Template PowerPoint file (default: {TEMPLATE_FILE})')
     
     args = parser.parse_args()
     
     create_ppt(
         input_file=args.input,
-        output_file=args.output
+        output_file=args.output,
+        template_file=args.template
     )
