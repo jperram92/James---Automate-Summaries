@@ -7,16 +7,18 @@ import logging
 import sys
 import os
 
+# Configure default paths
+DEFAULT_INPUT = os.path.join("input", "requirements.xlsx")
+DEFAULT_OUTPUT = os.path.join("output", "presentation.pptx")
+
 # Set up logging
-logging.basicConfig(filename='excel_to_ppt.log', level=logging.ERROR,
+logging.basicConfig(filename='excel_to_ppt.log', level=logging.INFO,
                     format='%(asctime)s - %(levelname)s - %(message)s')
 
-def validate_input(input_file, template_file):
+def validate_input(input_file):
     """Validate input files and structure"""
     if not os.path.exists(input_file):
         raise FileNotFoundError(f"Excel file {input_file} not found")
-    if not os.path.exists(template_file):
-        raise FileNotFoundError(f"Template file {template_file} not found")
 
     required_columns = ['Section', 'Title', 'Description', 'Priority']
     df = pd.read_excel(input_file)
@@ -56,13 +58,16 @@ def add_priority_badge(slide, priority):
     p.font.color.rgb = RGBColor(255, 255, 255)
     p.alignment = 1  # Center alignment
 
-def create_ppt(input_file, template_file, output_file):
+def create_ppt(input_file, output_file):
     """Main function to create PowerPoint from Excel"""
     try:
-        df = validate_input(input_file, template_file)
-        prs = Presentation(template_file)
+        # Create output directory if needed
+        os.makedirs(os.path.dirname(output_file), exist_ok=True)
         
-        # Use the first slide layout for all new slides
+        df = validate_input(input_file)
+        prs = Presentation()
+        
+        # Use the first slide layout (title and content) for all new slides
         slide_layout = prs.slide_layouts[1]
         
         for _, row in df.iterrows():
@@ -78,18 +83,21 @@ def create_ppt(input_file, template_file, output_file):
             
             # Add diagram if specified
             if 'Diagram Needed' in row and pd.notna(row['Diagram Needed']):
-                img_path = f"diagrams/{row['Diagram Needed']}.png"
+                img_path = os.path.join("diagrams", f"{row['Diagram Needed']}.png")
                 if os.path.exists(img_path):
                     left = Inches(1)
                     top = Inches(2)
                     height = Inches(4)
                     slide.shapes.add_picture(img_path, left, top, height=height)
+                else:
+                    logging.warning(f"Diagram not found: {img_path}")
             
             # Add priority badge
             add_priority_badge(slide, row['Priority'])
         
         prs.save(output_file)
         print(f"Successfully created {output_file} with {len(df)} slides")
+        logging.info(f"Created presentation: {output_file}")
         
     except Exception as e:
         logging.error(f"Error processing file: {str(e)}")
@@ -97,14 +105,16 @@ def create_ppt(input_file, template_file, output_file):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Convert Excel to PowerPoint')
-    parser.add_argument('--input', required=True, help='Input Excel file')
-    parser.add_argument('--template', required=True, help='PowerPoint template file')
-    parser.add_argument('--output', default='output.pptx', help='Output PowerPoint file')
+    parser.add_argument('--input', 
+                        default=DEFAULT_INPUT,
+                        help=f'Input Excel file (default: {DEFAULT_INPUT})')
+    parser.add_argument('--output', 
+                        default=DEFAULT_OUTPUT,
+                        help=f'Output PPTX file (default: {DEFAULT_OUTPUT})')
     
     args = parser.parse_args()
     
     create_ppt(
         input_file=args.input,
-        template_file=args.template,
         output_file=args.output
     )
