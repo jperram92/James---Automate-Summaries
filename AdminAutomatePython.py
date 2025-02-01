@@ -68,12 +68,19 @@ def add_logo(slide, logo_path):
     else:
         logging.warning(f"Logo not found: {logo_path}")
 
-def set_slide_background(slide):
-    """Set a simple background color for each slide"""
+def set_slide_background(slide, priority):
+    """Set a dynamic background color for each slide"""
     background = slide.background
     fill = background.fill
-    fill.solid()
-    fill.fore_color.rgb = RGBColor(255, 255, 255)  # White background (you can change the color here)
+    if priority == 'High':
+        fill.solid()
+        fill.fore_color.rgb = RGBColor(255, 99, 71)  # Light Red for High priority
+    elif priority == 'Medium':
+        fill.solid()
+        fill.fore_color.rgb = RGBColor(255, 223, 77)  # Light Yellow for Medium priority
+    else:
+        fill.solid()
+        fill.fore_color.rgb = RGBColor(152, 251, 152)  # Light Green for Low priority
 
 def create_ppt(input_file, output_file):
     """Main function to create PowerPoint from Excel"""
@@ -91,16 +98,21 @@ def create_ppt(input_file, output_file):
         for _, row in df.iterrows():
             slide = prs.slides.add_slide(slide_layout)
             
-            # Set background color for each slide
-            set_slide_background(slide)
+            # Set background color based on priority
+            set_slide_background(slide, row['Priority'])
             
-            # Set title
+            # Set title with improved text formatting
             title = slide.shapes.title
             title.text = f"{row['Section']} - {row['Title']}"
+            title.text_frame.paragraphs[0].font.size = Pt(20)
+            title.text_frame.paragraphs[0].font.bold = True
+            title.text_frame.paragraphs[0].font.color.rgb = RGBColor(0, 0, 0)  # Black title color
             
-            # Set content
+            # Set content with improved text styling
             content = slide.placeholders[1]
             content.text = row['Description']
+            content.text_frame.paragraphs[0].font.size = Pt(14)
+            content.text_frame.paragraphs[0].font.color.rgb = RGBColor(0, 0, 0)  # Black content color
             
             # Add diagram if specified
             if 'Diagram Needed' in row and pd.notna(row['Diagram Needed']):
